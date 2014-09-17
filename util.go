@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"crypto/des"
 	"encoding/hex"
 	"log"
@@ -93,4 +94,11 @@ func Encrypt3DESECB(input []byte, key []byte) []byte {
 		data = append(data, buf...)
 	}
 	return data
+}
+
+// See https://www.socketloop.com/tutorials/golang-padding-un-padding-data
+func PKCS5Padding(src []byte, blockSize int) []byte {
+	padding := blockSize - len(src)%blockSize
+	padtext := bytes.Repeat([]byte{byte(padding)}, padding)
+	return append(src, padtext...)
 }
