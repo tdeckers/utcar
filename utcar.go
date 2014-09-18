@@ -56,7 +56,7 @@ func main() {
 			}
 			scrambled_key := Scramble(key)
 			log.Printf("Key: %s", hex.EncodeToString(key))
-			log.Printf("Scrambled key: %s", hex.EncodeToString(scrambled_key))
+			//log.Printf("Scrambled key: %s", hex.EncodeToString(scrambled_key))
 			// Send key to alarm system
 			n, err := c.Write(scrambled_key)
 			// TODO: compare n with size of key
@@ -64,7 +64,7 @@ func main() {
 				log.Fatal(err)
 				return
 			}
-			log.Printf("Sent %d bytes to alarm (key)", n)
+			//log.Printf("Sent %d bytes to alarm (key)", n)
 			buf := make([]byte, 1024)
 			n, err = c.Read(buf)
 			if err != nil {
@@ -73,16 +73,16 @@ func main() {
 					return
 				}
 			}
-			log.Printf("Read %d bytes", n)
+			//log.Printf("Read %d bytes", n)
 			encryptedData := buf[:n]
-			log.Printf("Data: %s", hex.EncodeToString(encryptedData))
+			//log.Printf("Data: %s", hex.EncodeToString(encryptedData))
 			data := Decrypt3DESECB(encryptedData, key)
 			fmt.Println("Message(byte): ", hex.EncodeToString(data))
 			fmt.Println("Message: ", string(data[:]))
 			ack := []byte("ACK\r")
 			ack = append(ack, []byte{0, 0, 0, 0}...)
 			encryptedAck := Encrypt3DESECB(ack, key)
-			log.Printf("Encrypted ACK: %s", hex.EncodeToString(encryptedAck))
+			//log.Printf("Encrypted ACK: %s", hex.EncodeToString(encryptedAck))
 			n, err = c.Write(encryptedAck)
 			if err != nil {
 				log.Fatal(err)
