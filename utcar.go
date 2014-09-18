@@ -3,18 +3,37 @@ package main
 import (
 	"crypto/rand"
 	"encoding/hex"
+	"flag"
 	"fmt"
 	"io"
 	"log"
 	"net"
+	"strconv"
 )
+
+var fthost string
+var ftport int
+var ftuser string
+var ftpwd string
+var fport int
+
+// init function.  Used to read input parameters to the program.
+func init() {
+	flag.StringVar(&fthost, "thost", "", "Target host nanme")
+	flag.IntVar(&ftport, "tport", 443, "Target port number")
+	flag.StringVar(&ftuser, "tuser", "", "Target username")
+	flag.StringVar(&ftpwd, "tpwd", "", "Target password")
+	flag.IntVar(&fport, "port", 12300, "Listen port number (default: 12300)")
+	flag.Parse()
+}
 
 func main() {
 	// Listen on TCP port 12300 on all interfaces
-	l, err := net.Listen("tcp", ":12300")
+	l, err := net.Listen("tcp", ":"+strconv.Itoa(fport))
 	if err != nil {
 		log.Fatal(err)
 	}
+	log.Printf("Listing on port %d...", fport)
 	defer l.Close()
 	for {
 		// Wait for a connection
