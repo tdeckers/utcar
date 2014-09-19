@@ -1,9 +1,7 @@
 package main
 
 import (
-	"bytes"
 	"crypto/des"
-	"encoding/hex"
 	"log"
 )
 
