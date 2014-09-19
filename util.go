@@ -51,17 +51,17 @@ func Decrypt3DESECB(input []byte, key []byte) []byte {
 		log.Panic(err)
 	}
 	bs := block.BlockSize()
-	log.Printf("Block size: %d", bs)
+	//log.Printf("Block size: %d", bs)
 	if len(input)%bs != 0 {
 		log.Panic("Input should be a multiple of blocksize")
 	}
-	log.Printf("Input length: %d", len(input))
+	//log.Printf("Input length: %d", len(input))
 	m := len(input) / bs
-	log.Printf("Going for %d cycles", m)
+	//log.Printf("Going for %d cycles", m)
 	data := []byte{}
 	buf := make([]byte, bs)
 	for i := 0; i < m; i++ {
-		log.Printf("%d: byte: %s", i, hex.EncodeToString(input[0:bs]))
+		//log.Printf("%d: byte: %s", i, hex.EncodeToString(input[0:bs]))
 		block.Decrypt(buf, input)
 		input = input[bs:]
 		data = append(data, buf...)
@@ -78,27 +78,20 @@ func Encrypt3DESECB(input []byte, key []byte) []byte {
 		log.Panic(err)
 	}
 	bs := block.BlockSize()
-	log.Printf("Block size: %d", bs)
+	//log.Printf("Block size: %d", bs)
 	if len(input)%bs != 0 {
 		log.Panic("Input should be a multiple of blocksize")
 	}
-	log.Printf("Input length: %d", len(input))
+	//log.Printf("Input length: %d", len(input))
 	m := len(input) / bs
-	log.Printf("Going for %d cycles", m)
+	//log.Printf("Going for %d cycles", m)
 	data := []byte{}
 	buf := make([]byte, bs)
 	for i := 0; i < m; i++ {
-		log.Printf("%d: byte: %s", i, hex.EncodeToString(input[0:bs]))
+		//log.Printf("%d: byte: %s", i, hex.EncodeToString(input[0:bs]))
 		block.Encrypt(buf, input)
 		input = input[bs:]
 		data = append(data, buf...)
 	}
 	return data
-}
-
-// See https://www.socketloop.com/tutorials/golang-padding-un-padding-data
-func PKCS5Padding(src []byte, blockSize int) []byte {
-	padding := blockSize - len(src)%blockSize
-	padtext := bytes.Repeat([]byte{byte(padding)}, padding)
-	return append(src, padtext...)
 }

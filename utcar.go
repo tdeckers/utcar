@@ -77,7 +77,7 @@ func main() {
 			encryptedData := buf[:n]
 			//log.Printf("Data: %s", hex.EncodeToString(encryptedData))
 			data := Decrypt3DESECB(encryptedData, key)
-			fmt.Println("Message(byte): ", hex.EncodeToString(data))
+			//fmt.Println("Message(byte): ", hex.EncodeToString(data))
 			fmt.Println("Message: ", string(data[:]))
 			ack := []byte("ACK\r")
 			ack = append(ack, []byte{0, 0, 0, 0}...)
