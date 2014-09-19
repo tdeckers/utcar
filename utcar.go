@@ -4,7 +4,6 @@ import (
 	"crypto/rand"
 	"encoding/hex"
 	"flag"
-	"fmt"
 	"io"
 	"log"
 	"net"
@@ -69,8 +68,7 @@ func main() {
 			n, err = c.Read(buf)
 			if err != nil {
 				if err != io.EOF {
-					fmt.Println("Read error: ", err)
-					return
+					log.Fatal("Read error: ", err)
 				}
 			}
 			//log.Printf("Read %d bytes", n)
@@ -78,7 +76,7 @@ func main() {
 			//log.Printf("Data: %s", hex.EncodeToString(encryptedData))
 			data := Decrypt3DESECB(encryptedData, key)
 			//fmt.Println("Message(byte): ", hex.EncodeToString(data))
-			fmt.Println("Message: ", string(data[:]))
+			log.Println("Message: ", string(data[:]))
 			ack := []byte("ACK\r")
 			ack = append(ack, []byte{0, 0, 0, 0}...)
 			encryptedAck := Encrypt3DESECB(ack, key)
