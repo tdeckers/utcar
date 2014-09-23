@@ -1,8 +1,8 @@
 package main
 
 import (
-	"crypto/rand"
 	"encoding/hex"
+	"crypto/rand"
 	"flag"
 	"io"
 	"log"
@@ -26,11 +26,50 @@ func init() {
 	flag.Parse()
 }
 
+// handleConnection handles connections from the alarm system.
+// In short, it accepts a connection and sends a new, encrypted key.  Then it
+// receives an encrypted message from the alarm system, after which it completes 
+// with an ACK message.
+func handleConnection(c net.Conn) {
+	defer func() {
+		if r := recover(); r != nil {
+			log.Printf("Message processing panic (%v)\n", r)
+		}
+	}()
+	key := GenerateKey()	
+	scrambled_key := Scramble(key)
+	// Send key to alarm system
+	n, err := c.Write(scrambled_key)
+	if err != nil {
+		log.Panic(err)
+	}
+
+	buf := make([]byte, 1024) // receive buffer
+	n, err = c.Read(buf)
+	if err != nil {
+		if err != io.EOF {
+			log.Panic("Read error: ", err)
+		}
+	}
+	encryptedData := buf[:n]
+
+	data := Decrypt3DESECB(encryptedData, key)
+	log.Println("Message: ", string(data[:]))
+
+	ack := []byte("ACK\r")
+	ack = append(ack, []byte{0, 0, 0, 0}...)
+	encryptedAck := Encrypt3DESECB(ack, key)
+	n, err = c.Write(encryptedAck)
+	if err != nil {
+		log.Panic(err)
+	}
+}
+
 func main() {
 	// Listen on TCP port 12300 on all interfaces
 	l, err := net.Listen("tcp", ":"+strconv.Itoa(fport))
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal(err)	// exit.. something serious must be wrong.
 	}
 	log.Printf("Listing on port %d...", fport)
 	defer l.Close()
@@ -51,7 +90,6 @@ func main() {
 			rand.Read(key)
 			if err != nil {
 				log.Fatal(err)
-				return
 			}
 			scrambled_key := Scramble(key)
 			log.Printf("Key: %s", hex.EncodeToString(key))

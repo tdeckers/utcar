@@ -2,6 +2,7 @@ package main
 
 import (
 	"crypto/des"
+	"crypto/rand"
 	"log"
 )
 
@@ -92,4 +93,14 @@ func Encrypt3DESECB(input []byte, key []byte) []byte {
 		data = append(data, buf...)
 	}
 	return data
+}
+
+// Generate a random key (3DES)
+func GenerateKey() ([]byte) {
+	key := make([]byte, 24)
+	_, err := rand.Read(key)
+	if err != nil {
+		log.Panic(err)
+	}
+	return key
 }
