@@ -34,7 +34,7 @@ func main() {
 	}
 	log.Printf("Listing on port %d...", fport)
 	defer l.Close()
-	for {
+	for { // eternally...
 		// Wait for a connection
 		conn, err := l.Accept()
 		if err != nil {
