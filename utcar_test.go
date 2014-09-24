@@ -6,6 +6,7 @@ import (
 	"log"
 	"sync"
 	"io"
+	"bytes"
 )
 
 var (
@@ -42,7 +43,7 @@ func TestHandleConnection(t *testing.T) {
 	testHandleConnection(t, serverAddr)
 }
 
-func readKey(c net.Conn, t *testing.T) {
+func readKey(c net.Conn, t *testing.T) ([]byte) {
         buf := make([]byte, 1024) // receive buffer
         n, err := c.Read(buf)
         if err != nil {
@@ -53,6 +54,7 @@ func readKey(c net.Conn, t *testing.T) {
 	if n != 24 {
 		t.Errorf("Expected key length is 24, was %v", n)
 	}
+	return Scramble(buf[:n])
 }
 
 func testHandleConnection(t *testing.T, addr string) {
@@ -61,6 +63,26 @@ func testHandleConnection(t *testing.T, addr string) {
 		t.Fatalf("Dial (%v)", e)
 	}
 	defer client.Close()
-	readKey(client, t)
-	// TODO: complete test
+	key := readKey(client, t)
+	data := []byte("01010053\"SIA-DCS\"0007R0075L0001[#001465|NRP000*'DECKERS'NM]7C9677F21948CC12|#001465")
+	data = append(data, []byte{0,0,0,0,0}...)
+	encrypted := Encrypt3DESECB(data, key)
+	_, e = client.Write(encrypted)
+	if e != nil {
+		t.Fatalf("Write encrypted (%v)", e)
+	}
+	buf := make([]byte, 16) // only need 8
+	n, e := client.Read(buf)
+	if e != nil {
+		t.Fatalf("Failed to read ACK (%v)", e)
+	}
+	if n != 8 {
+		t.Fatalf("Expected 8 bytes, read %d", n)
+	}
+	ack := Decrypt3DESECB(buf[:8], key)
+	valid := []byte("ACK\r")
+	valid = append(valid, []byte{0,0,0,0}...)
+	if !bytes.Equal(valid, ack) {
+		t.Fatal("ACK messages didn't match, was %v", ack)
+	}
 }

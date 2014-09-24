@@ -3,9 +3,11 @@ package main
 import (
 	"encoding/hex"
 	"testing"
+	"bytes"
 )
 
 func TestScramble(t *testing.T) {
+	// Test known scramble
 	input, err := hex.DecodeString("cb10238cca30e305dd4bc511d474aabf6cea262d1cd008dd")
 	if err != nil {
 		t.Fatal(err)
@@ -15,6 +17,15 @@ func TestScramble(t *testing.T) {
 	const validation = "9e3d4989e979daad986216f840b61f37294976a7587a6189"
 	if outstr != validation {
 		t.Errorf("Output is %v, expected %v", outstr, validation)
+	}
+
+	input, err = hex.DecodeString("dfedcba86c657d87b9f9f54e57f811ab8e9c8ceffba8ef39")
+	if err != nil {
+		t.Fatal(err)
+	}
+	output = Scramble(Scramble(input))
+	if ! bytes.Equal(input, output) {
+		t.Error("Input and output for Scramble-Scramble are not equal")
 	}
 }
 
