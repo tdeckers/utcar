@@ -1,7 +1,6 @@
 package main
 
 import (
-	"bytes"
 	"testing"
 )
 
@@ -28,12 +27,8 @@ func TestParseSIA(t *testing.T) {
 	if len(match) != 6 {
 		t.Fatalf("Didn't find all fields, found (%d)", len(match))
 	}
-	if !bytes.Equal(match[0], []byte("0007")) ||
-		!bytes.Equal(match[1], []byte("0075")) ||
-		!bytes.Equal(match[2], []byte("0001")) ||
-		!bytes.Equal(match[3], []byte("001465")) ||
-		!bytes.Equal(match[4], []byte("RP")) ||
-		!bytes.Equal(match[5], []byte("000")) {
+	if match[0] != "0007" || match[1] != "0075" || match[2] != "0001" ||
+		match[3] != "001465" || match[4] != "RP" || match[5] != "000" {
 		t.Fatalf("Failed to match sequence %v", match)
 	}
 }
