@@ -28,4 +28,6 @@ For the example above, an HTTP POST with body ON is sent to:
 
 `https://<taddr>/rest/items/al_021/state`
 
+You can provide `-tuser` and `-tpwd` to provide basic authentication.
+
 If an (X)SIA message of UR is received, an OFF message is sent. Support for more messages types might be added later.
