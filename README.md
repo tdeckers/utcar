@@ -61,3 +61,5 @@ For the example above, an HTTP POST with body ON is sent to:
 You can provide `-tuser` and `-tpwd` to provide basic authentication.
 
 If an (X)SIA message of UR is received, an OFF message is sent. Support for more messages types might be added later.
+
+Note: the executable _utcar_ is build on an x64 platform, and will likely only run there.
