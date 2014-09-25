@@ -7,6 +7,12 @@ import (
 	"strings"
 )
 
+//HttpPost posts item updates to Openhab, based on the provided SIA message.
+// Known SIA messages:
+// * UA - detector activated
+// * UR - detector restored
+// * RP - Communication test (e.g. midnight)
+// See: http://alarmsbc.com/tech/pdf/sia.pdf
 func HttpPost(address string, user string, pwd string, sia SIA) {
 	// Openhab: https://asterix.ducbase.com:8443/rest/items/al_{item}/state
 	url := strings.Join([]string{"https://", address, "/rest/items/al_", sia.zone, "/state"}, "")
@@ -14,10 +20,11 @@ func HttpPost(address string, user string, pwd string, sia SIA) {
 	switch sia.command {
 	case "UA":
 		body = "ON"
-		break
 	case "UR":
 		body = "OFF"
-		break
+	default:
+		log.Printf("Unsupported SIA command for pusher (%s)\n", sia.command)
+		return // exit the pusher function
 	}
 	request, err := http.NewRequest("POST", url, strings.NewReader(body))
 	if err != nil {
