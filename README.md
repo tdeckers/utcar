@@ -5,10 +5,9 @@ utcar acts as a central station to a ATS8500 alarm system.
 My use case:
 * leverage the alarms systems events (e.g. motion, window sensors) as input to home automation
 
-* currently hardcoded to listen on port12300
-* currently output to stdout
+* default port number 12300, can be set on command line
 
 Next:
-* configure port number
-* add integration for push to HTTP REST (e.g. Openhab integration)
+* add integration for push to HTTP REST (e.g. Openhab integration).  Note: is this direct HTTP push to right way, or should I indirect through MQTT or similar?
+
 
