@@ -1,14 +1,29 @@
 package main
 
 import (
-	"encoding/hex"
 	"crypto/rand"
+	"encoding/hex"
 	"flag"
 	"io"
 	"log"
 	"net"
 	"strconv"
+	"time"
 )
+
+type SIA struct {
+	time     time.Time
+	sequence string
+	receiver string
+	line     string
+	account  string
+	command  string
+	zone     string
+}
+
+type Heartbeat struct {
+	time time.Time
+}
 
 var fthost string
 var ftport int
@@ -28,7 +43,7 @@ func init() {
 
 // handleConnection handles connections from the alarm system.
 // In short, it accepts a connection and sends a new, encrypted key.  Then it
-// receives an encrypted message from the alarm system, after which it completes 
+// receives an encrypted message from the alarm system, after which it completes
 // with an ACK message.
 func handleConnection(c net.Conn) {
 	defer func() {
@@ -36,7 +51,7 @@ func handleConnection(c net.Conn) {
 			log.Printf("Message processing panic (%v)\n", r)
 		}
 	}()
-	key := GenerateKey()	
+	key := GenerateKey()
 	scrambled_key := Scramble(key)
 	// Send key to alarm system
 	n, err := c.Write(scrambled_key)
@@ -63,13 +78,21 @@ func handleConnection(c net.Conn) {
 	if err != nil {
 		log.Panic(err)
 	}
+	if IsHeartbeat(data) {
+		log.Println("Heartbeat")
+		return // don't know what to do with this yet.
+	}
+	parsedData := ParseSIA(data)
+	if parsedData == nil {
+		log.Panicf("Not a recognized message: %s", string(data[:]))
+	}
 }
 
 func main() {
 	// Listen on TCP port 12300 on all interfaces
 	l, err := net.Listen("tcp", ":"+strconv.Itoa(fport))
 	if err != nil {
-		log.Fatal(err)	// exit.. something serious must be wrong.
+		log.Fatal(err) // exit.. something serious must be wrong.
 	}
 	log.Printf("Listing on port %d...", fport)
 	defer l.Close()
