@@ -1,8 +1,6 @@
 package main
 
 import (
-	"crypto/rand"
-	"encoding/hex"
 	"flag"
 	"io"
 	"log"
@@ -30,6 +28,8 @@ var ftuser string
 var ftpwd string
 var fport int
 
+var pchan chan SIA
+
 // init function.  Used to read input parameters to the program.
 func init() {
 	flag.StringVar(&ftaddr, "taddr", "", "Target addr (host:port)")
@@ -43,7 +43,7 @@ func init() {
 // In short, it accepts a connection and sends a new, encrypted key.  Then it
 // receives an encrypted message from the alarm system, after which it completes
 // with an ACK message.
-func handleConnection(c net.Conn) {
+func handleConnection(c net.Conn, q chan SIA) {
 	defer func() {
 		if r := recover(); r != nil {
 			log.Printf("Message processing panic (%v)\n", r)
@@ -87,6 +87,11 @@ func handleConnection(c net.Conn) {
 	sia := SIA{time.Now(), parsed[0], parsed[1], parsed[2], parsed[3], parsed[4], parsed[5]}
 	log.Println(sia)
 
+	if q == nil {
+		return
+	} else {
+		q <- sia
+	}
 }
 
 func main() {
@@ -97,6 +102,18 @@ func main() {
 	}
 	log.Printf("Listing on port %d...", fport)
 	defer l.Close()
+
+	// setup pusher channel (if addr is provided)
+	if ftaddr != "" {
+		pchan = make(chan SIA)
+		go func() {
+			for {
+				sia := <-pchan
+				HttpPost(ftaddr, ftuser, ftpwd, sia)
+			}
+		}()
+	}
+
 	for { // eternally...
 		// Wait for a connection
 		conn, err := l.Accept()
@@ -109,45 +126,7 @@ func main() {
 		go func(c net.Conn) {
 			defer c.Close()
 
-			// Generate a random key
-			key := make([]byte, 24)
-			rand.Read(key)
-			if err != nil {
-				log.Fatal(err)
-			}
-			scrambled_key := Scramble(key)
-			log.Printf("Key: %s", hex.EncodeToString(key))
-			//log.Printf("Scrambled key: %s", hex.EncodeToString(scrambled_key))
-			// Send key to alarm system
-			n, err := c.Write(scrambled_key)
-			// TODO: compare n with size of key
-			if err != nil {
-				log.Fatal(err)
-				return
-			}
-			//log.Printf("Sent %d bytes to alarm (key)", n)
-			buf := make([]byte, 1024)
-			n, err = c.Read(buf)
-			if err != nil {
-				if err != io.EOF {
-					log.Fatal("Read error: ", err)
-				}
-			}
-			//log.Printf("Read %d bytes", n)
-			encryptedData := buf[:n]
-			//log.Printf("Data: %s", hex.EncodeToString(encryptedData))
-			data := Decrypt3DESECB(encryptedData, key)
-			//fmt.Println("Message(byte): ", hex.EncodeToString(data))
-			log.Println("Message: ", string(data[:]))
-			ack := []byte("ACK\r")
-			ack = append(ack, []byte{0, 0, 0, 0}...)
-			encryptedAck := Encrypt3DESECB(ack, key)
-			//log.Printf("Encrypted ACK: %s", hex.EncodeToString(encryptedAck))
-			n, err = c.Write(encryptedAck)
-			if err != nil {
-				log.Fatal(err)
-			}
-
+			handleConnection(c, pchan)
 		}(conn)
 	}
 }

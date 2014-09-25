@@ -23,7 +23,9 @@ func HttpPost(address string, user string, pwd string, sia SIA) {
 	if err != nil {
 		log.Panicf("HTTP Request (%v)", err)
 	}
-	request.SetBasicAuth(user, pwd)
+	if user != "" && pwd != "" {
+		request.SetBasicAuth(user, pwd)
+	}
 	log.Printf("About to POST to %s\n", url)
 	tr := &http.Transport{
 		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},

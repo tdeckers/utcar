@@ -1,17 +1,17 @@
 package main
 
 import (
-	"testing"
-	"net"
-	"log"
-	"sync"
-	"io"
 	"bytes"
+	"io"
+	"log"
+	"net"
+	"sync"
+	"testing"
 )
 
 var (
-	serverAddr	string
-	once		sync.Once
+	serverAddr string
+	once       sync.Once
 )
 
 func listen() (net.Listener, string) {
@@ -34,7 +34,7 @@ func acceptConnection(l net.Listener) {
 	if e != nil {
 		log.Fatalf("l.Accept: %v", e)
 	}
-	handleConnection(conn)	
+	handleConnection(conn, nil)
 }
 
 // taking inspiration from http://golang.org/src/pkg/net/rpc/server_test.go
@@ -43,14 +43,14 @@ func TestHandleConnection(t *testing.T) {
 	testHandleConnection(t, serverAddr)
 }
 
-func readKey(c net.Conn, t *testing.T) ([]byte) {
-        buf := make([]byte, 1024) // receive buffer
-        n, err := c.Read(buf)
-        if err != nil {
-                if err != io.EOF {
-                        log.Fatalf("Key read error: ", err)
-                }
-        }
+func readKey(c net.Conn, t *testing.T) []byte {
+	buf := make([]byte, 1024) // receive buffer
+	n, err := c.Read(buf)
+	if err != nil {
+		if err != io.EOF {
+			log.Fatalf("Key read error: ", err)
+		}
+	}
 	if n != 24 {
 		t.Errorf("Expected key length is 24, was %v", n)
 	}
@@ -65,7 +65,7 @@ func testHandleConnection(t *testing.T, addr string) {
 	defer client.Close()
 	key := readKey(client, t)
 	data := []byte("01010053\"SIA-DCS\"0007R0075L0001[#001465|NRP000*'DECKERS'NM]7C9677F21948CC12|#001465")
-	data = append(data, []byte{0,0,0,0,0}...)
+	data = append(data, []byte{0, 0, 0, 0, 0}...)
 	encrypted := Encrypt3DESECB(data, key)
 	_, e = client.Write(encrypted)
 	if e != nil {
@@ -81,7 +81,7 @@ func testHandleConnection(t *testing.T, addr string) {
 	}
 	ack := Decrypt3DESECB(buf[:8], key)
 	valid := []byte("ACK\r")
-	valid = append(valid, []byte{0,0,0,0}...)
+	valid = append(valid, []byte{0, 0, 0, 0}...)
 	if !bytes.Equal(valid, ack) {
 		t.Fatal("ACK messages didn't match, was %v", ack)
 	}
