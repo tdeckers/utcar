@@ -105,6 +105,7 @@ func main() {
 
 	// setup pusher channel (if addr is provided)
 	if ftaddr != "" {
+		log.Printf("Pushing to %s\n", ftaddr)
 		pchan = make(chan SIA)
 		go func() {
 			for {
