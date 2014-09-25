@@ -25,16 +25,14 @@ type Heartbeat struct {
 	time time.Time
 }
 
-var fthost string
-var ftport int
+var ftaddr string
 var ftuser string
 var ftpwd string
 var fport int
 
 // init function.  Used to read input parameters to the program.
 func init() {
-	flag.StringVar(&fthost, "thost", "", "Target host nanme")
-	flag.IntVar(&ftport, "tport", 443, "Target port number")
+	flag.StringVar(&ftaddr, "taddr", "", "Target addr (host:port)")
 	flag.StringVar(&ftuser, "tuser", "", "Target username")
 	flag.StringVar(&ftpwd, "tpwd", "", "Target password")
 	flag.IntVar(&fport, "port", 12300, "Listen port number (default: 12300)")
@@ -78,8 +76,8 @@ func handleConnection(c net.Conn) {
 	if err != nil {
 		log.Panic(err)
 	}
+
 	if IsHeartbeat(data) {
-		log.Println("Heartbeat")
 		return // don't know what to do with this yet.
 	}
 	parsed := ParseSIA(data)
