@@ -19,7 +19,7 @@ func TestHttpPost(t *testing.T) {
 		if r.Method != "POST" {
 			t.Errorf("Reqeust method isn't POST, but %s", r.Method)
 		}
-		if r.URL.Path != "/rest/items/"+sia.zone+"/state" {
+		if r.URL.Path != "/rest/items/al_"+sia.zone+"/state" {
 			t.Errorf("Request Path isn't right (%s)", r.URL.Path)
 		}
 		if string(body) != "ON" {

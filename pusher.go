@@ -8,8 +8,8 @@ import (
 )
 
 func HttpPost(address string, user string, pwd string, sia SIA) {
-	// Openhab: https://asterix.ducbase.com:8443/rest/items/{item}/state
-	url := strings.Join([]string{"https://", address, "/rest/items/", sia.zone, "/state"}, "")
+	// Openhab: https://asterix.ducbase.com:8443/rest/items/al_{item}/state
+	url := strings.Join([]string{"https://", address, "/rest/items/al_", sia.zone, "/state"}, "")
 	var body string
 	switch sia.command {
 	case "UA":
