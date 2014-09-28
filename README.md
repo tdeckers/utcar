@@ -20,6 +20,21 @@ For _utcar_ to work, we'll configure it in the alarm system as a new central sta
 
 ## Running utcar
 
+```
+Usage of ./utcar:
+  -port=12300: Listen port number (default: 12300)
+  -taddr="": Target addr (host:port)
+  -tpwd="": Target password
+  -tuser="": Target username
+```
+
+Example:
+```
+./utcar -port=10000 -taddr=localhost:8443 -tuser=yourname -tpwd=yourpass
+2014/09/25 06:40:32 Listing on port 10000...
+2014/09/25 06:40:32 Pushing to localhost:8443
+```
+
 _utcar_ listens by default on port number 12300, can be set on command line (`-port`)
 
 The alarm must be configured to send OH+XSIA messages. In that case it will send two types of messages: heartbeats and (X)SIA messages.
