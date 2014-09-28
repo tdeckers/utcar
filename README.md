@@ -1,11 +1,26 @@
 # UTC Alarm Receiver
 
-utcar acts as a central station to a ATS alarm system.
+_utcar_ acts as a central station to a ATS alarm system and has been tested using an ATS2000IP system.  It might work with other variants as well.  The communication between the alarm system and utcar is using OH+XSIA protocol.  I'm not an expert, but I assume that any system that uses this protocol should be compatible (naive? me?).
 
 My use case:
 * leverage the alarms systems events (e.g. motion, window sensors) as input to home automation
 
-`utcar` listens by default on port number 12300, can be set on command line (`-port`)
+## Configure your alarm system
+
+Your alarm is typically configured to send messages to a central station in case of alarm, fire, etc...  The link is checked for health by sending periodic heartbeat messages.  In my case, these heartbeat messages are sent every minute.
+
+For _utcar_ to work, we'll configure it in the alarm system as a new central station.  Since we don't want to interrupt messages going to the first central station (the one calling the police in case of an alarm), we need to go through a few steps to make this work.  Let's assume we want to get notified when a motion sensor is triggered.
+
+1. Create a new area that we'll use with _utcar_.  This allows us to keep automation for _utcar_ separate from the actual alarms going to the formal central station.  Let's pick area 4.
+2. Configure a filter that follows the motion detector
+3. Configure an output to follow the filter
+4. Configure a new zone, and configure the output as its _virtual zone_.  Configure it in area 4.
+5. Configure a new central station (IP based), configure it with the host IP address of the machine where you'll be running _utcar_.  Also pick a port number, by default _utcar_ runs on port 12300.  Associate this central station with area 4. 
+
+
+## Running utcar
+
+_utcar_ listens by default on port number 12300, can be set on command line (`-port`)
 
 The alarm must be configured to send OH+XSIA messages. In that case it will send two types of messages: heartbeats and (X)SIA messages.
 The heartbeats look like this:
@@ -20,7 +35,7 @@ The (X)SIA messages are more interesting, the look like this:
 
 This is a message to indicate activation (UA) of a motion sensor in zone 21 (detector in hall).  If no `-taddr` is provided, we only log this message.
 
-if a `-taddr` parameter is provided, then `utcar` will POST a message to an HTTP endpoint. Right now, this is customized for Openhab - might need to generalize this later.
+if a `-taddr` parameter is provided, then _utcar_ will POST a message to an HTTP endpoint. Right now, this is customized for Openhab - might need to generalize this later.
 
 URL for the POST: `https://<taddr>/rest/items/al_{item}/state`, where item is the zone received from the alarm.
 
