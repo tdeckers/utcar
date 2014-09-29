@@ -1,10 +1,12 @@
 package main
 
 import (
+	"expvar"
 	"flag"
 	"io"
 	"log"
 	"net"
+	"net/http"
 	"strconv"
 	"time"
 )
@@ -23,12 +25,17 @@ type Heartbeat struct {
 	time time.Time
 }
 
-var ftaddr string
-var ftuser string
-var ftpwd string
-var fport int
+var (
+	ftaddr string
+	ftuser string
+	ftpwd  string
+	fport  int
+	fdebug int
 
-var pchan chan SIA
+	pchan chan SIA
+
+	requests = expvar.NewInt("requests")
+)
 
 // init function.  Used to read input parameters to the program.
 func init() {
@@ -36,6 +43,7 @@ func init() {
 	flag.StringVar(&ftuser, "tuser", "", "Target username")
 	flag.StringVar(&ftpwd, "tpwd", "", "Target password")
 	flag.IntVar(&fport, "port", 12300, "Listen port number (default: 12300)")
+	flag.IntVar(&fdebug, "debug", 0, "Debug server port number (default: no debug server)")
 	flag.Parse()
 }
 
@@ -87,6 +95,8 @@ func handleConnection(c net.Conn, q chan SIA) {
 	sia := SIA{time.Now(), parsed[0], parsed[1], parsed[2], parsed[3], parsed[4], parsed[5]}
 	log.Println(sia)
 
+	requests.Add(1) // accessible through expvar
+
 	if q == nil {
 		return
 	} else {
@@ -102,6 +112,16 @@ func main() {
 	}
 	log.Printf("Listing on port %d...", fport)
 	defer l.Close()
+
+	// setup debug server
+	if fdebug != 0 {
+		err = http.ListenAndServe(":"+strconv.Itoa(fdebug), nil)
+		if err != nil {
+			log.Printf("Failed to start debug server (%v)\n", err)
+		} else {
+			log.Printf("Debug server running on port %d\n", fdebug)
+		}
+	}
 
 	// setup pusher channel (if addr is provided)
 	if ftaddr != "" {
