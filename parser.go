@@ -17,7 +17,7 @@ func IsHeartbeat(input []byte) bool {
 // Fields are: sequence, receiver, line, account number, command, zone
 func ParseSIA(input []byte) ([]string, error) {
 	// 01010053"SIA-DCS"0007R0075L0001[#001465|NRP000*'DECKERS'NM]7C9677F21948CC12|#001465
-	siaRegex := regexp.MustCompile(`^\d{8}"SIA-DCS"(\d{4})R(\d{4})L(\d{4})\[#(\d{6})\|\w(\w{2})(\d{3}).*`)
+	siaRegex := regexp.MustCompile(`^\w{8}"SIA-DCS"(\d{4})R(\d{4})L(\d{4})\[#(\d{6})\|\w(\w{2})(\d{3}).*`)
 	match := siaRegex.FindSubmatch(input)
 	if len(match) > 1 { // remove the first field, which is just the matched string
 		match = match[1:]
