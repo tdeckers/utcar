@@ -96,8 +96,8 @@ func handleConnection(c net.Conn, q chan SIA) {
 		log.Println("Heartbeat.")
 		return // don't know what to do with this yet.
 	}
-	parsed := ParseSIA(data)
-	if parsed == nil {
+	parsed, err := ParseSIA(data)
+	if err != nil {
 		log.Panicf("Not a recognized message: %s", string(data[:]))
 	}
 	sia := SIA{time.Now(), parsed[0], parsed[1], parsed[2], parsed[3], parsed[4], parsed[5]}

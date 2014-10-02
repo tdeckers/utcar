@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"regexp"
 )
 
@@ -14,7 +15,7 @@ func IsHeartbeat(input []byte) bool {
 
 // ParseSIA retrieves relevant parameters from a SIA encoded message.
 // Fields are: sequence, receiver, line, account number, command, zone
-func ParseSIA(input []byte) []string {
+func ParseSIA(input []byte) ([]string, error) {
 	// 01010053"SIA-DCS"0007R0075L0001[#001465|NRP000*'DECKERS'NM]7C9677F21948CC12|#001465
 	siaRegex := regexp.MustCompile(`^\d{8}"SIA-DCS"(\d{4})R(\d{4})L(\d{4})\[#(\d{6})\|\w(\w{2})(\d{3}).*`)
 	match := siaRegex.FindSubmatch(input)
@@ -26,5 +27,9 @@ func ParseSIA(input []byte) []string {
 	for i := 0; i < len(match); i++ {
 		output[i] = string(match[i][:])
 	}
-	return output
+	if len(output) < 6 {
+		err := errors.New("Less than 6 SIA fields found")
+		return output, err
+	}
+	return output, nil
 }

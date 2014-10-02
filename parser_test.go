@@ -20,8 +20,8 @@ func TestIsHeartbeat(t *testing.T) {
 
 func TestParseSIA(t *testing.T) {
 	sia := "01010053\"SIA-DCS\"0007R0075L0001[#001465|NRP000*'DECKERS'NM]7C9677F21948CC12|#001465"
-	match := ParseSIA([]byte(sia))
-	if match == nil {
+	match, err := ParseSIA([]byte(sia))
+	if err != nil {
 		t.Fatal("SIA match fail")
 	}
 	if len(match) != 6 {
@@ -30,5 +30,11 @@ func TestParseSIA(t *testing.T) {
 	if match[0] != "0007" || match[1] != "0075" || match[2] != "0001" ||
 		match[3] != "001465" || match[4] != "RP" || match[5] != "000" {
 		t.Fatalf("Failed to match sequence %v", match)
+	}
+
+	sia = "01010053\"SIA-DCS\"0007R0075L0001[#001465"
+	_, err = ParseSIA([]byte(sia))
+	if err == nil {
+		t.Fatal("SIA match should have failed")
 	}
 }
