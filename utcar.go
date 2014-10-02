@@ -134,7 +134,9 @@ func main() {
 
 	// setup debug server
 	if fdebug != 0 {
-		err = http.ListenAndServe(":"+strconv.Itoa(fdebug), nil)
+		go func() {
+			err = http.ListenAndServe(":"+strconv.Itoa(fdebug), nil)
+		}()
 		if err != nil {
 			log.Printf("Failed to start debug server (%v)\n", err)
 		} else {
@@ -148,6 +150,12 @@ func main() {
 		pchan = make(chan SIA)
 		go func() {
 			for {
+				defer func() {
+					if r := recover(); r != nil {
+						log.Printf("Message push panic (%v)\n", r)
+						debug.PrintStack()
+					}
+				}()
 				sia := <-pchan
 				HttpPost(ftaddr, ftuser, ftpwd, sia)
 			}
