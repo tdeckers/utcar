@@ -1,12 +1,15 @@
 package main
 
 import (
+	"bytes"
+	"encoding/hex"
 	"expvar"
 	"flag"
 	"io"
 	"log"
 	"net"
 	"net/http"
+	"runtime/debug"
 	"strconv"
 	"time"
 )
@@ -55,6 +58,7 @@ func handleConnection(c net.Conn, q chan SIA) {
 	defer func() {
 		if r := recover(); r != nil {
 			log.Printf("Message processing panic (%v)\n", r)
+			debug.PrintStack()
 		}
 	}()
 	key := GenerateKey()
@@ -75,7 +79,10 @@ func handleConnection(c net.Conn, q chan SIA) {
 	encryptedData := buf[:n]
 
 	data := Decrypt3DESECB(encryptedData, key)
+	// Remove leading/trailing new line, line feeds, NUL chars
+	data = bytes.Trim(data, "\n\r\x00")
 	log.Println("Message: ", string(data[:]))
+	log.Println("HEX: ", hex.EncodeToString(data))
 
 	ack := []byte("ACK\r")
 	ack = append(ack, []byte{0, 0, 0, 0}...)
@@ -86,6 +93,7 @@ func handleConnection(c net.Conn, q chan SIA) {
 	}
 
 	if IsHeartbeat(data) {
+		log.Println("Heartbeat.")
 		return // don't know what to do with this yet.
 	}
 	parsed := ParseSIA(data)

@@ -6,7 +6,8 @@ import (
 
 func IsHeartbeat(input []byte) bool {
 	// SR0001L0001    006969XX    [ID00000000]
-	hbRegex := regexp.MustCompile(`^SR\d{4}L\d{4}\s+\w{8}\s+\[\w+\]$`)
+	// Note: there might be NULL chars mixed in!
+	hbRegex := regexp.MustCompile(`^SR\d{4}L\d{4}\s+\w{8}\s|\x00+\[\w+\]$`)
 	match := hbRegex.FindIndex(input)
 	return match != nil
 }
