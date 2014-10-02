@@ -2,7 +2,6 @@ package main
 
 import (
 	"bytes"
-	"encoding/hex"
 	"expvar"
 	"flag"
 	"io"
@@ -82,7 +81,6 @@ func handleConnection(c net.Conn, q chan SIA) {
 	// Remove leading/trailing new line, line feeds, NUL chars
 	data = bytes.Trim(data, "\n\r\x00")
 	log.Println("Message: ", string(data[:]))
-	log.Println("HEX: ", hex.EncodeToString(data))
 
 	ack := []byte("ACK\r")
 	ack = append(ack, []byte{0, 0, 0, 0}...)
