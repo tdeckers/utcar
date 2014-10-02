@@ -152,7 +152,10 @@ func main() {
 			for {
 				sia := <-pchan
 				// TODO: handle panics from this function (if any?)
-				HttpPost(ftaddr, ftuser, ftpwd, sia)
+				err := HttpPost(ftaddr, ftuser, ftpwd, sia)
+				if err != nil {
+					log.Printf("Push error: %v", err)
+				}
 			}
 		}()
 	}

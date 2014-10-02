@@ -26,7 +26,7 @@ func HttpPost(address string, user string, pwd string, sia SIA) error {
 	default:
 		return fmt.Errorf("Unsupported SIA command for pusher (%s)\n", sia.command)
 	}
-	request, err := http.NewRequest("POST", url, strings.NewReader(body))
+	request, err := http.NewRequest("PUT", url, strings.NewReader(body))
 	if err != nil {
 		log.Panicf("HTTP Request (%v)", err)
 	}
@@ -39,9 +39,9 @@ func HttpPost(address string, user string, pwd string, sia SIA) error {
 	client := &http.Client{Transport: tr}
 	response, err := client.Do(request)
 	if err != nil {
-		return fmt.Errorf("HTTP Response (%V)", err)
+		return fmt.Errorf("HTTP Response (%v)", err)
 	}
 	defer response.Body.Close()
-	log.Printf("POSTed %s to %s (%s)", body, url, response.Status)
+	log.Printf("PUT %s to %s (%s)", body, url, response.Status)
 	return nil
 }
