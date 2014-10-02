@@ -150,13 +150,8 @@ func main() {
 		pchan = make(chan SIA)
 		go func() {
 			for {
-				defer func() {
-					if r := recover(); r != nil {
-						log.Printf("Message push panic (%v)\n", r)
-						debug.PrintStack()
-					}
-				}()
 				sia := <-pchan
+				// TODO: handle panics from this function (if any?)
 				HttpPost(ftaddr, ftuser, ftpwd, sia)
 			}
 		}()
