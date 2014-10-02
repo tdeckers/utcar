@@ -8,6 +8,8 @@ import (
 	"log"
 	"net"
 	"net/http"
+	"os"
+	"os/signal"
 	"runtime/debug"
 	"strconv"
 	"time"
@@ -110,7 +112,18 @@ func handleConnection(c net.Conn, q chan SIA) {
 	}
 }
 
+func receiveSignal() {
+	sig := make(chan os.Signal, 1)
+	signal.Notify(sig, os.Interrupt)
+	go func() {
+		<-sig
+		os.Exit(0)
+	}()
+}
+
 func main() {
+	// setup response to CTRL-C
+	receiveSignal()
 	// Listen on TCP port 12300 on all interfaces
 	l, err := net.Listen("tcp", ":"+strconv.Itoa(fport))
 	if err != nil {
