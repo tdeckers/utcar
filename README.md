@@ -12,10 +12,15 @@ Your alarm is typically configured to send messages to a central station in case
 For _utcar_ to work, we'll configure it in the alarm system as a new central station.  Since we don't want to interrupt messages going to the first central station (the one calling the police in case of an alarm), we need to go through a few steps to make this work.  Let's assume we want to get notified when a motion sensor is triggered.
 
 1. Create a new area that we'll use with _utcar_.  This allows us to keep automation for _utcar_ separate from the actual alarms going to the formal central station.  Let's pick area 4.
+  ![alt text](https://github.com/tdeckers/utcar/raw/master/img/area.png)
 2. Configure a filter that follows the motion detector
+  ![alt text](https://github.com/tdeckers/utcar/raw/master/img/filter.png)
 3. Configure an output to follow the filter
+  ![alt text](https://github.com/tdeckers/utcar/raw/master/img/output.png)
 4. Configure a new zone, and configure the output as its _virtual zone_.  Configure it in area 4.
-5. Configure a new central station (IP based), configure it with the host IP address of the machine where you'll be running _utcar_.  Also pick a port number, by default _utcar_ runs on port 12300.  Associate this central station with area 4. 
+  ![alt text](https://github.com/tdeckers/utcar/raw/master/img/zone.png)
+5. Configure a new central station (IP based), configure it with the host IP address of the machine where you'll be running _utcar_.  Also pick a port number, by default _utcar_ runs on port 12300.  Associate this central station with area 4.
+  ![alt text](https://github.com/tdeckers/utcar/raw/master/img/central_station.png)
 
 
 ## Running utcar
