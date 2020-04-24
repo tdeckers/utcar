@@ -1,0 +1,4 @@
+# don't check in certs file used for buildig docker container
+ca-certificates.crt
+# don't check in binaries
+utcar

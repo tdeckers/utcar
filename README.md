@@ -64,6 +64,12 @@ You can provide `-tuser` and `-tpwd` to provide basic authentication.
 
 If an (X)SIA message of UR is received, an OFF message is sent. Support for more messages types might be added later.
 
+## Running in a container
+
+You can also run utcar in a container:
+
+	docker run -p 12300:12300 tdeckers/utcar -port=10000 -taddr=localhost:8443
+
 # Building
 
 To cross-compile for different platforms, set up your cross compilers for the platforms you need.
@@ -79,6 +85,19 @@ Then to compile your app:
 	cd $YOUR_APP
 	GOOS=windows GOARCH=amd64 go build
 	
-Note: 3 versions are provided: for Windows 64, arm32 (for raspberry pi) and for linux64.
+Note: 3 versions are provided: for Windows 64, arm32 (for raspberry pi) and for linux64. See releases.
+
+## Building a container
+(thanks: https://rollout.io/blog/building-minimal-docker-containers-for-go-applications/)
+
+First build a statically linked executable:
+
+	CGO_ENABLED=0 GOARCH=amd64 GOOS=linux go build -a -installsuffix cgo
+	cp /etc/ssl/certs/ca-certificates.crt .
+	docker build -t utcar .
+
+Then run the container:
+
+	docker run -p 12300:12300 utcar /utcar -port=10000 -taddr=localhost:8443
 
 Credits: Thanks to Dirk @ OP for his help on the ATS configuration.
