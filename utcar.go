@@ -43,7 +43,7 @@ var (
 
 // init function.  Used to read input parameters to the program.
 func init() {
-	flag.StringVar(&ftaddr, "taddr", "", "Target addr (host:port)")
+	flag.StringVar(&ftaddr, "taddr", "", "Target addr (e.g. http://openhab.local:8080)")
 	flag.StringVar(&ftuser, "tuser", "", "Target username")
 	flag.StringVar(&ftpwd, "tpwd", "", "Target password")
 	flag.IntVar(&fport, "port", 12300, "Listen port number (default: 12300)")

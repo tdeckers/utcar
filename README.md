@@ -27,13 +27,13 @@ For _utcar_ to work, we'll configure it in the alarm system as a new central sta
 
 	Usage of ./utcar:
 	  -port=12300: Listen port number (default: 12300)
-	  -taddr="": Target addr (host:port)
+	  -taddr="": Target addr (e.g. http://openhab.local:8080)
 	  -tpwd="": Target password
 	  -tuser="": Target username
 
 Example:
 
-	./utcar -port=10000 -taddr=localhost:8443 -tuser=yourname -tpwd=yourpass
+	./utcar -port=10000 -taddr=https://localhost:8443 -tuser=yourname -tpwd=yourpass
 	2014/09/25 06:40:32 Listing on port 10000...
 	2014/09/25 06:40:32 Pushing to localhost:8443
 
@@ -68,7 +68,7 @@ If an (X)SIA message of UR is received, an OFF message is sent. Support for more
 
 You can also run utcar in a container:
 
-	docker run -p 12300:12300 tdeckers/utcar -port=10000 -taddr=localhost:8443
+	docker run -p 12300:12300 tdeckers/utcar -port=10000 -taddr=https://localhost:8443
 
 # Building
 
@@ -98,6 +98,6 @@ First build a statically linked executable:
 
 Then run the container:
 
-	docker run -p 12300:12300 utcar /utcar -port=10000 -taddr=localhost:8443
+	docker run -p 12300:12300 utcar -port=10000 -taddr=http://localhost:8080
 
 Credits: Thanks to Dirk @ OP for his help on the ATS configuration.
