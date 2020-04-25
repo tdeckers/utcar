@@ -1,4 +1,11 @@
+# golang ignores
+bin
+pkg
+
 # don't check in certs file used for buildig docker container
 ca-certificates.crt
 # don't check in binaries
 utcar
+utcar_linux_amd64
+utcar_linux_arm6
+utcar.exe

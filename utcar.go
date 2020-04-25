@@ -3,7 +3,7 @@ package main
 import (
 	"bytes"
 	"expvar"
-	"flag"
+	"fmt"
 	"io"
 	"log"
 	"net"
@@ -11,8 +11,10 @@ import (
 	"os"
 	"os/signal"
 	"runtime/debug"
-	"strconv"
 	"time"
+
+	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 )
 
 type SIA struct {
@@ -30,25 +32,48 @@ type Heartbeat struct {
 }
 
 var (
-	ftaddr string
-	ftuser string
-	ftpwd  string
-	fport  int
-	fdebug int
-
 	pchan chan SIA
 
 	requests = expvar.NewInt("requests")
 )
 
-// init function.  Used to read input parameters to the program.
-func init() {
-	flag.StringVar(&ftaddr, "taddr", "", "Target addr (e.g. http://openhab.local:8080)")
-	flag.StringVar(&ftuser, "tuser", "", "Target username")
-	flag.StringVar(&ftpwd, "tpwd", "", "Target password")
-	flag.IntVar(&fport, "port", 12300, "Listen port number (default: 12300)")
-	flag.IntVar(&fdebug, "debug", 0, "Debug server port number (default: no debug server)")
-	flag.Parse()
+var rootCmd = &cobra.Command{
+	Use:   "utcar",
+	Short: "Utcar provides integration for ATS2000IP alarm system",
+	Long: `Utcar provides integration for ATS2000IP alarm system
+			and optionally posts to an Openhab home automation
+			system.
+			Complete documentation is available at 
+			https://github.com/tdeckers/utcar`,
+	Run: func(cmd *cobra.Command, args []string) {
+		run()
+	},
+}
+
+func Execute() {
+	rootCmd.PersistentFlags().String("addr", "", "Target addr (e.g. http://openhab.local:8080)")
+	rootCmd.PersistentFlags().String("user", "", "Target username")
+	rootCmd.PersistentFlags().String("pwd", "", "Target password")
+	rootCmd.PersistentFlags().Int("port", 12300, "Listen port number")
+	rootCmd.PersistentFlags().Int("debug", 0, "Debug server port number (default: no debug server)")
+	viper.BindPFlag("addr", rootCmd.PersistentFlags().Lookup("addr"))
+	viper.BindPFlag("user", rootCmd.PersistentFlags().Lookup("user"))
+	viper.BindPFlag("pwd", rootCmd.PersistentFlags().Lookup("pwd"))
+	viper.BindPFlag("port", rootCmd.PersistentFlags().Lookup("port"))
+	viper.BindPFlag("debug", rootCmd.PersistentFlags().Lookup("debug"))
+
+	cobra.OnInitialize(initConfig)
+
+	if err := rootCmd.Execute(); err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+}
+
+func initConfig() {
+	viper.SetEnvPrefix("utcar") // uppercased automatically
+	viper.AutomaticEnv()
+	viper.SetDefault("port", 12300)
 }
 
 // handleConnection handles connections from the alarm system.
@@ -121,38 +146,38 @@ func receiveSignal() {
 	}()
 }
 
-func main() {
+func run() {
 	// setup response to CTRL-C
 	receiveSignal()
 	// Listen on TCP port 12300 on all interfaces
-	l, err := net.Listen("tcp", ":"+strconv.Itoa(fport))
+	l, err := net.Listen("tcp", fmt.Sprintf(":%d", viper.GetInt("port")))
 	if err != nil {
 		log.Fatal(err) // exit.. something serious must be wrong.
 	}
-	log.Printf("Listing on port %d...", fport)
+	log.Printf("Listing on port %d...", viper.GetInt("port"))
 	defer l.Close()
 
 	// setup debug server
-	if fdebug != 0 {
+	if viper.GetInt("debug") != 0 {
 		go func() {
-			err = http.ListenAndServe(":"+strconv.Itoa(fdebug), nil)
+			err = http.ListenAndServe(fmt.Sprintf(":%d", viper.GetInt("debug")), nil)
 		}()
 		if err != nil {
 			log.Printf("Failed to start debug server (%v)\n", err)
 		} else {
-			log.Printf("Debug server running on port %d\n", fdebug)
+			log.Printf("Debug server running on port %d\n", viper.GetInt("debug"))
 		}
 	}
 
 	// setup pusher channel (if addr is provided)
-	if ftaddr != "" {
-		log.Printf("Pushing to %s\n", ftaddr)
+	if viper.GetString("addr") != "" {
+		log.Printf("Pushing to %s\n", viper.GetString("addr"))
 		pchan = make(chan SIA)
 		go func() {
 			for {
 				sia := <-pchan
 				// TODO: handle panics from this function (if any?)
-				err := HttpPost(ftaddr, ftuser, ftpwd, sia)
+				err := HttpPost(viper.GetString("addr"), viper.GetString("user"), viper.GetString("pwd"), sia)
 				if err != nil {
 					log.Printf("Push error: %v", err)
 				}
@@ -175,4 +200,8 @@ func main() {
 			handleConnection(c, pchan)
 		}(conn)
 	}
+}
+
+func main() {
+	Execute()
 }

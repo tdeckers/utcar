@@ -48,7 +48,7 @@ func readKey(c net.Conn, t *testing.T) []byte {
 	n, err := c.Read(buf)
 	if err != nil {
 		if err != io.EOF {
-			log.Fatalf("Key read error: ", err)
+			log.Fatalf("Key read error: %v", err)
 		}
 	}
 	if n != 24 {
@@ -83,6 +83,6 @@ func testHandleConnection(t *testing.T, addr string) {
 	valid := []byte("ACK\r")
 	valid = append(valid, []byte{0, 0, 0, 0}...)
 	if !bytes.Equal(valid, ack) {
-		t.Fatal("ACK messages didn't match, was %v", ack)
+		t.Fatalf("ACK messages didn't match, was %v", ack)
 	}
 }

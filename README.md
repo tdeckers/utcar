@@ -26,18 +26,23 @@ For _utcar_ to work, we'll configure it in the alarm system as a new central sta
 ## Running utcar
 
 	Usage of ./utcar:
-	  -port=12300: Listen port number (default: 12300)
-	  -taddr="": Target addr (e.g. http://openhab.local:8080)
-	  -tpwd="": Target password
-	  -tuser="": Target username
+	  --port=12300: Listen port number (default: 12300)
+	  --addr="": Target addr (e.g. http://openhab.local:8080)
+	  --pwd="": Target password
+	  --user="": Target username
 
 Example:
 
-	./utcar -port=10000 -taddr=https://localhost:8443 -tuser=yourname -tpwd=yourpass
+	./utcar -port=10000 --addr=https://localhost:8443 --user=yourname --pwd=yourpass
 	2014/09/25 06:40:32 Listing on port 10000...
 	2014/09/25 06:40:32 Pushing to localhost:8443
 
-_utcar_ listens by default on port number 12300, can be set on command line (`-port`)
+Example with environment variables:
+
+	UTCAR_PORT=12000 ./utcar
+	2020/04/25 12:37:38 Listing on port 12000...
+
+_utcar_ listens by default on port number 12300, can be set on command line (`--port`)
 
 The alarm must be configured to send OH+XSIA messages. In that case it will send two types of messages: heartbeats and (X)SIA messages.
 The heartbeats look like this:
@@ -50,17 +55,17 @@ The (X)SIA messages are more interesting, the look like this:
 
 	01010053"SIA-DCS"0007R0073L0011[#001365|NUA021*'detector hall'NM]7C9677F21948CC12|#001365
 
-This is a message to indicate activation (UA) of a motion sensor in zone 21 (detector in hall).  If no `-taddr` is provided, we only log this message.
+This is a message to indicate activation (UA) of a motion sensor in zone 21 (detector in hall).  If no `--addr` is provided, we only log this message.
 
-if a `-taddr` parameter is provided, then _utcar_ will POST a message to an HTTP endpoint. Right now, this is customized for Openhab - might need to generalize this later.
+if a `--addr` parameter is provided, then _utcar_ will POST a message to an HTTP endpoint. Right now, this is customized for Openhab - might need to generalize this later.
 
-URL for the POST: `https://<taddr>/rest/items/al_{item}/state`, where item is the zone received from the alarm.
+URL for the POST: `<addr>/rest/items/al_{item}/state`, where item is the zone received from the alarm.
 
 For the example above, an HTTP POST with body ON is sent to:
 
-	https://<taddr>/rest/items/al_021/state
+	<addr>/rest/items/al_021/state
 
-You can provide `-tuser` and `-tpwd` to provide basic authentication.
+You can provide `--user` and `--pwd` to provide basic authentication.
 
 If an (X)SIA message of UR is received, an OFF message is sent. Support for more messages types might be added later.
 
@@ -68,7 +73,11 @@ If an (X)SIA message of UR is received, an OFF message is sent. Support for more
 
 You can also run utcar in a container:
 
-	docker run -p 12300:12300 tdeckers/utcar -port=10000 -taddr=https://localhost:8443
+	docker run -p 10000:10000 tdeckers/utcar --port=10000 --addr=https://localhost:8443
+
+Or alternatively:
+
+	docker run -p 12300:12300 -e UTCAR_ADDR=https://localhost:8443 tdeckers/utcar
 
 # Building
 
@@ -98,6 +107,10 @@ First build a statically linked executable:
 
 Then run the container:
 
-	docker run -p 12300:12300 utcar -port=10000 -taddr=http://localhost:8080
+	docker run --addr=http://localhost:8080
+
+Or
+
+	docker run -e UTCAR_ADDR=http://localhost:8080 utcar
 
 Credits: Thanks to Dirk @ OP for his help on the ATS configuration.

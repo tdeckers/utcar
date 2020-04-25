@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -29,7 +30,7 @@ func TestHttpPost(t *testing.T) {
 
 	server := httptest.NewTLSServer(handler)
 	defer server.Close()
-	address := server.Listener.Addr().String()
+	address := fmt.Sprintf("http://%s", server.Listener.Addr().String())
 	log.Printf("HTTP test server (%v)\n", address)
 	HttpPost(address, "tom", "pwd", sia)
 }
