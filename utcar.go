@@ -54,11 +54,17 @@ func Execute() {
 	rootCmd.PersistentFlags().String("addr", "", "Target addr (e.g. http://openhab.local:8080)")
 	rootCmd.PersistentFlags().String("user", "", "Target username")
 	rootCmd.PersistentFlags().String("pwd", "", "Target password")
+	rootCmd.PersistentFlags().String("mqttaddr", "", "Mqtt addr (e.g. http://mqtt:1883)")
+	rootCmd.PersistentFlags().String("mqttuser", "", "Mqtt username")
+	rootCmd.PersistentFlags().String("mqttpwd", "", "Mqtt password")
 	rootCmd.PersistentFlags().Int("port", 12300, "Listen port number")
 	rootCmd.PersistentFlags().Int("debug", 0, "Debug server port number (default: no debug server)")
 	viper.BindPFlag("addr", rootCmd.PersistentFlags().Lookup("addr"))
 	viper.BindPFlag("user", rootCmd.PersistentFlags().Lookup("user"))
 	viper.BindPFlag("pwd", rootCmd.PersistentFlags().Lookup("pwd"))
+	viper.BindPFlag("mqttaddr", rootCmd.PersistentFlags().Lookup("mqttaddr"))
+	viper.BindPFlag("mqttuser", rootCmd.PersistentFlags().Lookup("mqttuser"))
+	viper.BindPFlag("mqttpwd", rootCmd.PersistentFlags().Lookup("mqttpwd"))
 	viper.BindPFlag("port", rootCmd.PersistentFlags().Lookup("port"))
 	viper.BindPFlag("debug", rootCmd.PersistentFlags().Lookup("debug"))
 
@@ -178,6 +184,20 @@ func run() {
 				sia := <-pchan
 				// TODO: handle panics from this function (if any?)
 				err := HttpPost(viper.GetString("addr"), viper.GetString("user"), viper.GetString("pwd"), sia)
+				if err != nil {
+					log.Printf("Push error: %v", err)
+				}
+			}
+		}()
+	}
+	if viper.GetString("mqttaddr") != "" {
+		log.Printf("Pushing to mqtt %s\n", viper.GetString("mqttaddr"))
+		pchan = make(chan SIA)
+		go func() {
+			client := ConnectMqtt(viper.GetString("mqttaddr"), viper.GetString("mqttuser"), viper.GetString("mqttpwd"))
+			for {
+				sia := <-pchan
+				err := PublishMqtt(client, sia)
 				if err != nil {
 					log.Printf("Push error: %v", err)
 				}
