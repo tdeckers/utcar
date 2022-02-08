@@ -36,6 +36,7 @@ func HttpPost(address string, user string, pwd string, sia SIA) error {
 	if err != nil {
 		log.Panicf("HTTP Request (%v)", err)
 	}
+	request.Header.Add("Content-Type", "text/plain")
 	if user != "" && pwd != "" {
 		request.SetBasicAuth(user, pwd)
 	}
